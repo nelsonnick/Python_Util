@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+.0#!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 # 通过向服务器访问获取题库JSON字符串，再生成JS文件
 # 使用浏览器登录灯塔（除了IE，其他随意），在正式答题页面按F12调出控制台（Console），将C盘根目录下《灯塔.js》中的JS代码复制进去，按回车执行即可，请手动控制交卷时间。
