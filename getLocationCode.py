@@ -7,8 +7,22 @@ import pymysql
 api = 'http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2019/'
 
 
+def create_table():
+    db = pymysql.connect("localhost", "root", "root", "locationCode")
+    cursor = db.cursor()
+    cursor.execute("DROP TABLE IF EXISTS code")
+    sql = """CREATE TABLE code (
+             code varchar(255),
+             name varchar(255),
+             category varchar(255), 
+             type varchar(255),   
+             url varchar(255))"""
+    cursor.execute(sql)
+    db.close()
+
+
 def get_province():
-    province = requests.get(api + 'index.html').content.decode('GB2312')
+    province = requests.get(api + 'index.html').content.decode(encoding='GB2312', errors='ignore')
     soup = BeautifulSoup(province, 'html5lib')
     col_len = len(soup.select(".provincetr"))
     for col in range(0, col_len):
@@ -17,12 +31,12 @@ def get_province():
             province_name = soup.select(".provincetr")[col].select("a[href]")[row].text
             province_url = soup.select(".provincetr")[col].select("a[href]")[row]['href']
             province_dict = {'code': province_url[0:2], 'name': province_name, 'url': province_url}
-            # get_city(province_url)
             save_data('省区', province_dict)
+            get_city(province_url)
 
 
 def get_city(province_url):
-    city = requests.get(api + province_url).content.decode('GB2312')
+    city = requests.get(api + province_url).content.decode(encoding='GB2312', errors='ignore')
     soup = BeautifulSoup(city, 'html5lib')
     col_len = len(soup.select(".citytr"))
     for col in range(0, col_len):
@@ -30,12 +44,12 @@ def get_city(province_url):
         city_code = soup.select(".citytr")[col].select("a[href]")[0].text
         city_url = soup.select(".citytr")[col].select("a[href]")[0]['href']
         city_dict = {'code': city_code[0:4], 'name': city_name, 'url': city_url}
-        get_county(province_url, city_url)
         save_data('市洲', city_dict)
+        get_county(province_url, city_url)
 
 
 def get_county(province_url, city_url):
-    county = requests.get(api + city_url).content.decode('GB2312')
+    county = requests.get(api + city_url).content.decode(encoding='GB2312', errors='ignore')
     soup = BeautifulSoup(county, 'html5lib')
     col_len = len(soup.select(".countytr"))
     for col in range(0, col_len):
@@ -51,12 +65,12 @@ def get_county(province_url, city_url):
             county_code = soup.select(".countytr")[col].select("a[href]")[0].text
             county_url = soup.select(".countytr")[col].select("a[href]")[0]['href']
         county_dict = {'code': county_code[0:6], 'name': county_name, 'url': county_url}
-        get_town(province_url, county_url)
         save_data('区县', county_dict)
+        get_town(province_url, county_url)
 
 
 def get_town(province_url, county_url):
-    town = requests.get(api + province_url[0:2] + '/' + county_url).content.decode('GB2312')
+    town = requests.get(api + province_url[0:2] + '/' + county_url).content.decode(encoding='GB2312', errors='ignore')
     soup = BeautifulSoup(town, 'html5lib')
     col_len = len(soup.select(".towntr"))
     for col in range(0, col_len):
@@ -64,12 +78,12 @@ def get_town(province_url, county_url):
         town_code = soup.select(".towntr")[col].select("a[href]")[0].text
         town_url = soup.select(".towntr")[col].select("a[href]")[0]['href']
         town_dict = {'code': town_code[0:9], 'name': town_name, 'url': town_url}
-        get_village(province_url, county_url, town_url)
         save_data('街镇', town_dict)
+        # get_village(province_url, county_url, town_url)
 
 
 def get_village(province_url, county_url, town_url):
-    village = requests.get(api + province_url[0:2] + '/' + county_url[0:2] + '/' + town_url).content.decode('GB2312')
+    village = requests.get(api + province_url[0:2] + '/' + county_url[0:2] + '/' + town_url).content.decode(encoding='GB2312', errors='ignore')
     soup = BeautifulSoup(village, 'html5lib')
     col_len = len(soup.select(".villagetr"))
     for col in range(0, col_len):
@@ -81,15 +95,18 @@ def get_village(province_url, county_url, town_url):
 
 
 def save_data(category_name, location_dict):
-    db = pymysql.connect("localhost", "root", "root", "locationCode")
-    cursor = db.cursor()
-    try:
-        cursor.execute(get_sql_str(category_name, location_dict))
-        db.commit()
-        print(category_name + ":" + location_dict['name'] + "---已保存")
-    except:
-        db.rollback()
-    db.close()
+    if check_data(location_dict['code']):
+        print(category_name + ":" + location_dict['name'] + "---已存在")
+    else:
+        db = pymysql.connect("localhost", "root", "root", "locationCode")
+        cursor = db.cursor()
+        try:
+            cursor.execute(get_sql_str(category_name, location_dict))
+            db.commit()
+            print(category_name + ":" + location_dict['name'] + "---已保存")
+        except:
+            db.rollback()
+        db.close()
 
 
 def get_sql_str(category_name, location_dict):
@@ -99,6 +116,22 @@ def get_sql_str(category_name, location_dict):
     else:
         return "INSERT INTO code(code, name, url, category) VALUES ('" + location_dict['code'] + "', '" \
                + location_dict['name'] + "','" + location_dict['url'] + "','" + category_name + "')"
+
+
+def check_data(code):
+    db = pymysql.connect("localhost", "root", "root", "locationCode")
+    cursor = db.cursor()
+    sql = "SELECT * FROM code  WHERE code ='" + code + "'"
+    try:
+       cursor.execute(sql)
+       results = cursor.rowcount
+    except:
+        print()
+    db.close()
+    if results == 1 :
+        return True
+    else:
+        return False
 
 
 # get_province()
