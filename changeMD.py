@@ -18,7 +18,7 @@ while line:
     elif line.startswith("* "):
         if line.startswith("* 发文字号") or line.startswith("* 效力级别") \
                 or line.startswith("* 文件时效") or line.startswith("* 发布日期")\
-                or line.startswith("* 实施日期") or line.startswith("* 发布机关"):
+                or line.startswith("* 实施日期") or line.startswith("* 发布机关") or line.startswith("* 网址链接"):
             newFile.write(line)
         else:
             newFile.write(line.replace('* ', '&#8195;&#8195;'))

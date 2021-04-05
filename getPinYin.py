@@ -68,4 +68,4 @@ for w in words:
         add_new_table(document, py_len)
         num = num + py_len
 
-document.save("D:\\看拼音写汉字.docx")
+document.save("D:\\看拼音写词语.docx")
