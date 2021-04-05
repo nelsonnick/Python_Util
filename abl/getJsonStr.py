@@ -118,7 +118,7 @@ for d1 in data:
                 str3 = ''
         str1 = str1 + '{"label":"' + d1[2] + '","value":"' + d1[0] + '","children":[' + str2[:-1] + ']},'
         str2 = ''
-str0 = '[' + str1[:-1] + ']'
+str0 = 'export default [' + str1[:-1] + ']'
 # 关闭数据库连接
 db.close()
 print(str0)
