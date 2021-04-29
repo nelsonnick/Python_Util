@@ -2,6 +2,7 @@
 # -*- coding: UTF-8 -*-
 # zhifa315题库
 # pip3 install beautifulsoup4
+
 import pymysql
 import re
 import random
@@ -361,3 +362,4 @@ def readExam(file):
 # analysis()
 # read()
 readExam('考题')
+
