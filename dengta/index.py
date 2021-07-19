@@ -136,4 +136,5 @@ def go():
             progress(session, courseId, idCardHash, course['time'] - 25)
 
 
+
 go()
